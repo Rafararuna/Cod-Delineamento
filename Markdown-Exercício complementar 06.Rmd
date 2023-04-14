@@ -1,0 +1,97 @@
+---
+title: "Exercício Complementar 6"
+author: "Rafael Santana Araruna - 180026798"
+date: "28/04/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+##Questão 1 - Lista 5
+
+Reproduzir o exemplo 8.8 de Oehlert, página 187.
+
+Alguns computadores dividem a memória em páginas. Quando um programa é executado, é alocado um certo número de páginas de RAM. O próprio programa pode exigir mais páginas do que as alocadas. Quando este for o caso, as páginas não utilizadas atualmente são armazenadas no disco. De vez em quando, é necessária uma página armazenada em disco; isso é chamado de falha de página. Quando ocorre uma falha de página, uma das páginas atualmente ativas deve ser movida para o disco para liberar espaço para a página que deve ser trazida do disco. O truque é escolher uma página “boa” para enviar para o disco, onde “boa” significa uma página que não será usada em breve.
+
+O experimento consiste em executar diferentes programas em um computador com diferentes configurações e contar o número de falhas de página. Existem dois algoritmos de paginação para estudar e este é o fator de interesse principal. Um segundo fator com três níveis é a sequência em que as rotinas do sistema foram inicializadas. O fator três se trata do tamanho do programa (requisitos de memória pequenos, médios ou grandes) e o fator quatro se refere a quantidade de memória RAM alocada (grande, média ou pequena).
+
+Para realizar o estudo, precisa-se dos seguintes pacotes:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lawstat)
+library(lmtest)
+library(car)
+library(EnvStats)
+library(olsrr)
+library(nortest)
+library(PMCMRplus)
+```
+
+Primeiramente, abre-se o banco de dados e observa-se a sua estrutura:
+
+```{r, echo = TRUE}
+dados = read.table(file.choose(),header = TRUE)
+
+print(head(dados))
+print(str(dados))
+```
+
+Agora, monta-se o modelo e realiza-se a ANOVA:
+
+```{r, echo = TRUE}
+#formatando as variávis:
+dados$alg = as.factor(dados$alg)
+dados$seq = as.factor(dados$seq)
+dados$psize = as.factor(dados$psize)
+dados$ram = as.factor(dados$ram)
+dados$y <- log(dados$y)
+
+#construindo o modelo:
+mod1 = aov(y ~ seq + psize + ram + alg + 
+           seq*psize + seq*ram + seq*alg + psize*ram + 
+           psize*alg + ram*alg + seq*psize*ram + seq*ram*alg + 
+           seq*psize*alg + psize*ram*alg,data=dados)
+
+print(summary(mod1))
+print(anova(mod1))
+```
+
+Analisando a ANOVA do modelo, percebe-se que, ao nível de 5%, as variáveis explicativas, de maneira isolada, são mais significativas que as interações. Acerca das interações, pode-se notar que, quase todas aquelas que envolvem a variável algorítmo, não são significativas, apenas a interação ram:alg é significativa, com um p-valor de 0,0057. Resumindo, percebe-se que todos os efeitos principais e todas as interações que envolvem apenas alocação, tamanho do programa e carga são significativos.
+
+Porém, como foi dito anteriormente, há evidências bastante fortes para uma alocação por interação de algoritmo (p-valor 0,006), mas as interações que incluem sequência e algoritmo ou tamanho e algoritmo não são altamente significativas.
+
+A segunda coisa a se notar é que os dados variam em várias ordens de magnitude e parecem apenas multiplicativos. Aumentar o tamanho do programa ou alterar a alocação parece dobrar ou triplicar o número de falhas de página, em vez de apenas adicionar um número constante. Isso sugere uma transformação de log da resposta, como foi feito no código acima, e assim, começamos a analisar o número de log de falhas de página.
+
+```{r, echo = TRUE}
+plot(mod1$fitted.values,rstudent(mod1),pch=16,
+     xlab = "Valores ajustados",ylab = "Resíduo Studentizado")
+abline(h=2,col=2)
+abline(h=-2,col=2)
+
+qqnorm(mod1$residuals, pch=16, xlab = "Quantis Teóricos",
+       ylab = "Quantis Amostrais")
+qqline(mod1$residuals,col=2)
+```
+
+A variância é razoavelmente estável nesta escala (veja a primeira figura acima), e a normalidade também parece boa (veja a segunda figura acima). Assim, acredita-se que as inferências são bastante sólidas.O modelo completo explica 173,6 SS; disso, 170,9 é explicado pela alocação, tamanho, sequência de carregamento e suas interações. Assim, embora o algoritmo e algumas de suas interações possam ser significativos, seus efeitos são minúsculos em comparação com os outros efeitos.
+
+
+```{r, echo = TRUE}
+a <- names(effects(mod1))
+tabela <- tibble(a = if_else(a == "","residuals",a), e = as.vector(effects(mod1))) %>% 
+  mutate(te = gsub('[0-9]+', '',a)) %>% 
+  mutate(te = factor(te,levels = unique(te))) %>% 
+  mutate(te=)
+
+ggplot(tabela,aes(te,e)) +
+  geom_point()+
+  xlab("Tipo de Efeito") +
+  ylab("Valor do efeito") +
+  theme_bw()+
+  theme(axis.text = element_text(angle = 45,vjust = 0.5,           hjust=1)) 
+```
+
+Lembrando que os dados estão na escala logarítmica, a diferença do algoritmo 1 para 2 é sobre um fator de exp (2 × 0,215) = 1,54, então o algoritmo 2 produz cerca de 1,54 vezes mais falhas de página do que o algoritmo 1. Vale a pena saber isso, uma vez que as falhas de página demoram muito tempo em um computador.
+
+Portanto, embora o algoritmo 1 seja consideravelmente melhor no geral, sua vantagem comparativa sobre o algoritmo 2 é um pouco menor em pequenas alocações.

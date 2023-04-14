@@ -1,0 +1,64 @@
+---
+title: "Exercício Complementar 07"
+author: "Rafael Santana Araruna - 180026798"
+date: "14/05/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Questão 4 - Lista 6
+
+Resolver o problema 13.6 do Oehlert, página 350.
+
+Um experimento foi conduzido para determinar como diferentes variedades de soja competem contra ervas daninhas. Havia dezesseis variedades de soja e três tratamentos com ervas daninhas: sem herbicida, aplicar herbicida 2 semanas após o plantio da soja e aplicar herbicida 4 semanas após o plantio da soja. A resposta medida é a biomassa de ervas daninhas em kg / ha. Houve duas repetições do experimento - uma em St. Paul, MN e outra em Rosemount, MN - para um total de 96 observações (dados de Bussan 1995).
+
+Analise esses dados quanto aos efeitos do herbicida e da variedade.
+
+Para realizar o estudo, precisa-se dos seguintes pacotes:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+Primeiramente, abre-se o banco de dados e observa-se a sua estrutura:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+dados <-  read.table("http://www.stat.umn.edu/~gary/book/fcdae.data/pr13.6",header=TRUE)
+
+print(head(dados))
+print(str(dados))
+```
+
+Agora, monta-se o modelo e realiza-se a ANOVA:
+
+```{r, echo = TRUE}
+#formatando as variávis:
+y <- dados$biomass
+loc <- factor(dados$location)
+trat <- factor(dados$trt)
+variedade <- factor(dados$variety)
+
+#construindo o modelo:
+mod <- lm(y~loc+trat+variedade+trat:variedade) #com bloco
+print(anova(mod))
+print(summary(mod))
+
+mod. <- lm(y~trat+variedade+trat:variedade) #sem bloco
+print(anova(mod.))
+print(summary(mod.))
+```
+
+Analisando a primeira saída, gerada pelo código (anova(mod)), e considerando um nível de significância de 0,05, percebe-se que apenas as variáveis localidade e tratamento apresentam p-valor menor que 0,05, ou seja, somente essas duas variáveis são significantes no modelo. No entando, a variável varieade, com um p-valor de o,1729, ou seja, maior que o alpha de 0,05, mostra que não é signficante no modelo. Além disso, acerca da interação (tratamento:variedade), nota-se que aprensentou um p-valor de 0,9116, mostrando que não é significante no modelo, tanto que, se analisarmos o código (summary(mod)), pode-se observar que apensas o tratamento trat2:variedade6 (M89-1743:herbicida 4 semanas após o plantio da soja) é significante, com um p-valor de 0,0305.
+
+Outrossim, quando a estatística F do bloco é grande (maior que 1), implica que acrescentar o bloco tende a ser bom. Dessa forma, olhando, no modelo com bloco, que o valor da estatística F é de 42,4527, ou seja, muito maior que 1, pode-se dizer que fazer com bloco é últil, pois as estatística F do bloco é alta, e, além disso, fazer com bloco é melhor que fazer sem bloco, pois o QME com bloco (1192718) é menor que o QME sem (2222748).
+
+Uma outra observação válida de se fazer é calcular as médias dos três tratamentos:
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+mod. <- aov(y~loc+trat+variedade+trat:variedade)
+medias <- model.tables(mod.,type='means')
+print(medias)
+```
+
+Analisando a sáida acima, nota-se que o tratamento 3 (sem herbicidas) possui a maior média, cujo valor é de 3376, ou seja, não aplicar o herbicida está gerando mais biomass, ou seja, mais crescimento da soja. Essa observação é um pouco contraditória, quando analisada com a saída do modelo, o qual diz que o tratamento é significante.

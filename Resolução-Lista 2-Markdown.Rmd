@@ -1,0 +1,541 @@
+---
+title: "Lista 2 - Delineamento"
+author: "Rafael Santana Araruna - 180026798"
+date: "3/12/2021"
+output: html_document
+---
+
+## Questão 1
+
+```{r, echo=TRUE}
+# gerando 25 pontos aleatórios  de uma distribuição uniforme padrão
+unidades_exp = runif(25)
+# transformando os pontos em números naturais de 1 a 25, com base em seu valor ordinal (o maior recebe 25 e o menor recebe 1)
+run = order(unidades_exp)
+# associando os tratamentos aos números aleatórios
+casualização=data.frame(Tratamento=rep(1:5,each=5), "Índice da Amostra" =run)
+print(casualização)
+```
+
+## Questão 2
+
+ta no arquivo do victor
+
+## Questão 3
+
+Escrita no overleaf
+
+## Questão 4
+
+```{r, echo=TRUE}
+
+```
+
+## Questão 5
+
+Escrita no arquivo do victor
+
+## Questão 6
+
+O parâmetro "ncp" na função é o parâmetro de não-centralidade
+
+```{r, echo=TRUE}
+dchisq(c(1,10,100,10000,10000), 4, ncp = 0, log = FALSE)
+pchisq(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qchisq(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+rchisq(n, df, ncp = 0)
+```
+
+obs: As distribuições qui-quadrado não-central e F não-central estão implementadas no R já nas funções pchisq, qchisq, pf, qf, etc. Para usar a versão não-central dessas distribuições, basta utilizar o argumento ncp, de "non centrality parameter".
+
+## Questão 7
+
+#a) 
+
+Escrita no arquivo
+
+#b)
+
+Cálculo para m=0
+
+```{r, echo=TRUE}
+v0 = c(0,0,0) # vetor nulo
+dados1= c(v1,v0,v0,v0,
+         v0, v1, v0, v0,
+         v0, v0, v1, v0,
+         v0, v0, v0, v1)
+X= matrix(dados1, ncol=4) # printei, tá certo
+
+beta_est = solve(t(X)%*%X)%*%t(X)%*%Y
+print("A solução é")
+beta_est
+```
+
+Cálculo para t_1 = 0:
+
+```{r, echo=TRUE}
+           v0,v1,v0,v0,
+           v0,v0,v1,v0,
+           v0,v0,v0,v1)
+X = matrix(dados2, ncol=4) # printei, tá certo
+beta_est = solve(t(X)%*%X)%*%t(X)%*%Y
+print("A solução é ")
+beta_est
+```
+
+
+Cálculo para t_4 = 0:
+
+```{r, echo=TRUE}
+dados3 = c(v1,v1,v1,v1,
+          v1,v0,v0,v0,
+          v0,v1,v0,v0,
+          v0,v0,v1,v0)
+X = matrix(dados3, ncol=4) # printei, tá certo
+beta_est = solve(t(X)%*%X)%*%t(X)%*%Y
+print("A solução é")
+beta_est
+```
+
+#c)
+
+```{r, echo=TRUE}
+y = c(7.66,6.98,7.80,5.26,5.44,5.80,7.41,7.33,7.04,3.51,2.91,3.66)
+trat=rep(1:4,each=3)
+data = data.frame(y=y,trat=factor(trat))
+aov = aov(y~trat, data)
+summary(aov)
+aov(y~trat-1,data)$coefficients
+```
+
+Repara que a solução obtida pela função aov coincide pcom a solução obtida quando μ=0.
+
+## Questão 8
+
+tá no arquivo do vitor
+
+## Questão 9
+
+```{r, echo=TRUE}
+x = c(rep(1,5),rep(2,5),rep(3,5))
+y = c(36.6,39.2, 30.4,37.1,34.1,17.5,20.6,18.7,25.7,22.0,
+      15.0,10.4,18.9,20.5,15.5)
+
+plot(x,y, col='red', pch=19,
+     main="Atraso no semáforo para diferentes tipos de semáforo")
+```
+
+#a) Usamos o modelo de médias, dado por Yij = Mi + eij, onde μi é o efeito médio do tratamento i, e eij é o erro da j-ésima observação do i-ésimo tratamento.Neste caso, temos 3 tratamentos, então temos i = 1,2,3 3 e 5 observações para cada tratamento, então temos j=1,...,5
+
+#b) A suposição do modelo é a de que eij sao i.i.d∼N(0,σ2)
+
+#c)
+
+```{r, echo=TRUE}
+y = c(36.6,39.2, 30.4,37.1,34.1,17.5,20.6,18.7,25.7,22.0,
+      15.0,10.4,18.9,20.5,15.5)
+data = data.frame(y=y,trat=factor(x))
+aov = aov(y~trat, data)
+summary(aov)
+aov(y~trat-1,data)$coefficients
+
+data
+```
+
+#d) 
+
+ta no arquivo do victor
+
+#e)
+
+```{r, echo=TRUE}
+n=15; t=3
+qf(0.95,t-1,n*t-t)
+
+1-pf(41.597,t-1,n*t-t)
+```
+
+#Questao 9
+
+```{r, echo=TRUE}
+db_9=tribble(~programado,~semi_atuado,~atuado,
+36.6, 17.5, 15.0,
+39.2, 20.6, 10.4,
+30.4, 18.7, 18.9,
+37.1, 25.7, 10.5,
+34.1, 22.0, 15.2)
+db_9_ajustada=db_9 %>%
+  pivot_longer(cols=everything(),names_to = 'tratamento', values_to = 'valor') %>% 
+  mutate(tratamento=factor(tratamento,levels = c(names(db_9))))
+
+```
+
+#a) 
+
+Yij=μi+eij, onde Yij é a variável aleatória quantitativa tempo médio que o veículo fica parado num semáforo referente a observação j, quando submetida ao tratamento i,i∈[1,3] (cujos índices equivalem respectivamente aos semáforos Programado, Semi-atuado e ativado), μi é a média da variável Y_ij ao receber o tratamento i, eij é o erro aleatório da variável Y_ij.
+
+#b) 
+
+eij são variáveis aleatórias independentes e com distribuição N(0,σ2)
+
+#c)
+
+```{r, echo=TRUE}
+aov(valor~tratamento,db_9_ajustada)
+```
+
+#d)
+
+```{r, echo=TRUE}
+tapply(db_9_ajustada$valor,db_9_ajustada$tratamento,mean)
+tapply(db_9_ajustada$valor,db_9_ajustada$tratamento,sd)
+
+modelo=lm(valor~tratamento-1,db_9_ajustada)
+summary(modelo)
+```
+
+#e)
+
+```{r, echo=TRUE}
+confint(modelo)
+```
+
+
+#f)
+
+```{r, echo=TRUE}
+soma_quadrado <- db_9_ajustada %>% 
+  mutate(media_geral=mean(valor)) %>% 
+  group_by(tratamento) %>% 
+  mutate(media_tratamento=mean(valor),
+         quad_trat=(media_tratamento-media_geral)^2,
+         quad_erro=(valor-media_tratamento)^2,
+         quad_total=(valor-media_geral)^2) %>%
+  ungroup() %>% 
+  summarise(soma_total=sum(quad_total),soma_tratamento=sum(quad_trat),soma_erro=sum(quad_erro))
+df1=(ncol(db_9)-1)
+df2=(nrow(db_9_ajustada)-ncol(db_9))
+MSTrat=soma_quadrado$soma_tratamento/df1
+MSE=soma_quadrado$soma_erro/df2
+quantil_F=MSTrat/MSE
+
+tapply(db_9_ajustada$valor,db_9_ajustada$tratamento,mean) - qt(0.975,df2) * sqrt(MSE/nrow(db_9))
+
+tapply(db_9_ajustada$valor,db_9_ajustada$tratamento,mean) + qt(0.975,df2) * sqrt(MSE/nrow(db_9))
+
+```
+
+#g) ?
+
+## Questão 10
+
+#a)
+
+```{r, echo=TRUE}
+mu_i=c(65,80,95)
+ggplot()+
+  geom_pointrange(aes(x=factor(c('<5 anos','5-10 anos','> 10 anos')),y=mu_i,ymin=mu_i-3,ymax=mu_i+3))+
+  xlab(NULL)+ylab('Grau de satisfação no trabalho')
+
+#ou
+
+x= factor(c('5 anos ou menos', '5 a 10 anos', '10 anos ou mais'))
+y=c(65,80,95)
+
+plot(x,y, col='red', pch=19, main='Visualização do Modelo', ylim=c(0,100),
+    xlab='Grupo de Permanência', ylab='Satisfação no Trabalho', lwd=2)
+
+```
+
+#b)
+
+```{r, echo=TRUE}
+exp_MSE=3^2
+exp_MSTr=3^2+25*sum((mu_i-mean(mu_i))^2)/(length(mu_i)-1)
+
+#ou
+
+n=25
+t=3
+u = c(65, 80, 95)
+mu = mean(u)
+esp_mstr = (n/(t-1))*(sum((u - mu)^2))
+print("o valor de E(MStr) é")
+esp_mstr
+
+```
+
+Temos F=MStrat/MSres=5625/9=625. Com t=3 tratamentos e n=25, o pvalor é calculado abaixo.
+
+```{r, echo=TRUE}
+n=25; t=3;
+print("O p-valor é igual a")
+1-pf(625,t-1,n*t-t)
+
+```
+
+## Questão 11
+
+#a) 
+
+Sim, as diferenças entre os intervalos interquatílicos são indicativo de diferença entre as variâncias da variável considerando cada tratamento.
+
+
+```{r, echo=TRUE}
+db_11=read.fwf('lista2-CH16PR7.txt',widths = c(7,7,7),header = F,col.names = c('valor','tratamento','id')) %>% 
+  mutate(tratamento=factor(tratamento))
+
+ggplot(db_11,aes(x=tratamento,y=valor))+
+  geom_boxplot()
+
+#ou
+
+dados = read.table("C:/Users/jgararuna/Downloads/lista2-CH16PR7.txt",
+                   quote="\"", comment.char="")
+names(dados) = c("valor", "nível", "observação")
+plot(x=dados$nível,y=dados$valor,col='red',pch=19)
+plot(x=factor(dados$nível),y=dados$valor,col='gray',pch=19)
+
+```
+
+#b)
+
+```{r, echo=TRUE}
+modelo_11=lm(valor~tratamento,db_11)
+anova=anova(modelo_11)
+anova
+
+#ou
+
+dados=dados[,1:2]
+dados$nível = factor(dados$nível)
+aov=aov(valor~nível, dados)
+aov
+summary(aov)
+aov(valor~nível-1,dados)$coefficients
+```
+
+#c)
+
+```{r, echo=TRUE}
+desvios=db_11 %>% 
+  mutate(media_geral=mean(valor)) %>%
+  group_by(tratamento) %>% 
+  mutate(media_tratamento=mean(valor),
+         quad_trat=(media_tratamento-media_geral)^2,
+         erro=(valor-media_tratamento),
+         quad_erro=(valor-media_tratamento)^2,
+         quad_total=(valor-media_geral)^2) %>%
+  ungroup() 
+somas=desvios%>%
+  summarise(soma_erro=sum(erro),soma_quad_total=sum(quad_total),
+            soma_quad_tratamento=sum(quad_trat),soma_quad_erro=sum(quad_erro))
+
+SSTr=somas$soma_quad_tratamento
+SSE=somas$soma_quad_erro
+
+MSTr=SSTr/(length(levels(db_11$tratamento))-1)
+MSE=SSE/(nrow(db_11)-length(levels(db_11$tratamento)))
+F_calc=MSTr/MSE
+
+round(somas$soma_erro,8)==0
+
+#ou
+
+media1 = 6.877777778
+sum(dados[1:9,1] - media1)
+
+media2 = 8.1333333333
+sum(dados[10:21,1] - media2)
+
+media3 = 9.2
+sum(dados[22:27,1] - media3)
+
+print("Todos as somas de resíduos são iguais a zero, como podemos ver")
+```
+
+#d)
+
+```{r, echo=TRUE}
+modelo_11=lm(valor~tratamento,db_11)
+anova=anova(modelo_11)
+anova
+```
+
+#e)
+
+```{r, echo=TRUE}
+t=3
+mstrat = 10.06
+msres = 0.64
+F = mstrat/msres
+Fcrit = qf(0.99,t-1,n*t-1)
+F
+Fcrit
+```
+
+#f)
+
+```{r, echo=TRUE}
+print("O p-valor é igual a")
+1-pf(F,t-1,n*t-t)
+```
+
+O baixo p-valor implica na rejeição da hipótese nula do teste F dá suporte para a afirmação de que existe diferença entre as médias em relação a pelo menos um par de média dos tratamentos
+
+
+#f)
+
+```{r, echo=TRUE}
+1-pf(F_calc,(length(levels(db_11$tratamento))-1),nrow(db_11)-length(levels(db_11$tratamento)))
+
+anova$`Pr(>F)`[1]
+```
+
+###################OLHAR AS QUESTOES NO ARQUIVO DO VICTOR DAQUI PRA FRENTE#####################
+
+## Questão 12
+
+#a) escrita, esta no arquivo do victor
+
+```{r, echo=TRUE}
+t=3
+n_i=db_11 %>% group_by(tratamento) %>% summarise(n=n()) %>% pull(n)
+Y=db_11$valor
+X=matrix(ncol = 3)
+for (i in 1:t){
+  for(j in 1:n_i[i]){X=rbind(X,diag(t)[i,])}
+}
+X=X[-1,]
+
+```
+
+#b)
+
+```{r, echo=TRUE}
+v0 = c(0,0,0) # vetor nulo
+Y = dados$valor # vetor das observações
+dados1= c(v1,v1,v1,v0,v0,v0,v0,v0,v0,
+          v0,v0,v0,v1,v1,v1,v1,v0,v0,
+          v0,v0,v0,v0,v0,v0,v0,v1,v1)
+          
+X = matrix(dados1,ncol=3) # matriz de delineamento, printe, tá certa
+
+beta_est = solve(t(X)%*%X)%*%t(X)%*%Y
+print("A solução é")
+beta_est
+```
+
+#c) 
+
+Quando o modelo é nao balanceado, utilizamoa n para representar o numero de repetições por tratamento.
+Quando o modelo é não balanceado utilizamos n_i para representar o numero de repetições no i-ésimo tratamento.
+Assim, nt=N, sendo N o numero de obs total.
+Logo, neste exercicio,n=9 e nao n=27. 
+
+```{r, echo=TRUE}
+n=9;t=3
+F=qf(0.99,t-1,n*t-t)
+
+#Calculamos λ abaixo:
+
+t=3
+sigma=0.9
+mu_i = c(7,8,9)
+mu = mean(mu_i)
+# Cálculo de lambda
+lambda=(n/sigma^2)*(sum((mu_i - mu)^2))
+print("o valor de lambda é")
+lambda
+
+# cálculo do poder do teste
+print("o poder do teste é igual a")
+1 - pf(F, df1=t-1, df2=n*t-t, ncp=lambda)
+```
+
+#d) ?
+
+```{r, echo=TRUE}
+
+```
+
+## Questão 13
+
+```{r, echo=TRUE}
+db_13 = read.table("C:/Users/victo/Dropbox/UnB 2-2020/Delineamento/dados oehlert/ex3.1",
+                   header=TRUE, quote="\"") %>% 
+transmute(y=y,dieta=factor(diet))
+```
+
+#a)
+
+```{r, echo=TRUE}
+mu_est=db_13 %>% 
+  group_by(dieta) %>% 
+  summarise(mu_est=mean(y)) %>%
+  ungroup() %>% 
+  pull(mu_est)
+print("a média global é")
+media_global
+print("os efeitos de tratamento são")
+mu_est
+```
+
+#b)
+
+```{r, echo=TRUE}
+plot(db_13$dieta, db_13$y)
+
+dados_13 = read.table("C:/Users/victo/Dropbox/UnB 2-2020/Delineamento/dados oehlert/ex3.1",
+                   header=TRUE, quote="\"")
+
+plot(dados_13$diet, dados_13$y, col='red', pch=19)
+```
+
+#c)
+
+```{r, echo=TRUE}
+aov = aov(formula = y~dieta, db_13)
+summary(aov)
+```
+
+## Questão 14
+
+```{r, echo=TRUE}
+t=5
+n=25
+SSE=153.4
+mu_i_est=c(2.16, 2.45, 2.91, 3.00, 2.71)
+mu_est=mean(mu_i_est)
+SSTr=sum((mu_i_est-mu_est)^2)*n
+MSE=SSE/(n*t-t)
+
+MSTr=SSTr/(t-1)
+
+F_calc=MSTr/MSE
+
+1-pf(F_calc,(t-1),n*t-t)
+
+x = factor(c(1,2,3,4,5))
+y = c(2.16,2.45,2.91,3,2.71)
+plot(x,y,lwd=2,col='red', ylim=c(0,3))
+```
+
+## Questão 15
+
+Lembrando que:
+
+-A unidade observacional é de onde você tira a informação.
+-A unidade experimental é onde você casualizou, é onde foi feita a casualização.
+
+Então os substratos são as unidades experimentais, o enunciado diz, "twelve substrates are randomly assigned to four operators", e as medidas são feitas sobre os pinos dos operadores, então as unidades observacionais são os pinos.
+
+```{r, echo=TRUE}
+dados_15 <- 
+  
+dados_15 = dados_15[-nrow(dados_15),] %>% 
+  group_by(operator,substrate) %>% 
+  summarise(mean_substrato=mean(strength))
+
+anova(lm(men_substrato~operator,dados_15))
+```

@@ -1,0 +1,273 @@
+---
+title: "Lista 1 de Delineamento"
+author: "Rafael Santana Araruna - 180026798"
+date: "3/10/2021"
+output: html_document
+---
+
+## Observação do 1º exercício complementar
+
+A unidade observacional é de onde você tira a informação.
+A unidade experimental é onde você casualizou, é onde foi feita a casualização.
+
+## Questão 2
+
+A casualização é um componente do delineamento experimental. A casualização é feita porque, de forma geral, métodos estatísticos exigem a suposição de que as observações (ou erros) sejam variáveis aleatórias independentes. Então o processo de casualização é realizado para tornar esta suposição válida, ao alocar o material experimental de forma aleatória, e também ao aleatorizar as unidades experimentais.
+
+Além disso, a casualização permite uma estimação não-viesada da variância e da diferença de tratamentos.
+
+É pra gerar independência entre os tratamentos e menos interferência do pesquisador e dos fatores nao controláveis.
+
+## Questão 3
+
+a) Se trata de um teste t com duas amostras:
+
+```{r, echo=TRUE}
+#Quero testar as seguintes hipóteses: Ho) M(novo) = M(trad) e H1) M(novo) > M(trad)
+
+amostra = c(46, 37, 47, 45, 32, 62, 56) # define a amostra
+novo = c(46, 45, 32, 56) # define os percentuais do livro novo
+trad = c(37, 47, 62) # define os percentuais do livro tradicional
+
+# calculando a estaística t para realizar o teste de hipótese:
+
+s_agrupado = sqrt((sum((trad - mean(trad))^2) + sum((novo - mean(novo))^2))/(length(novo)+length(trad)-2))
+
+corretor = sqrt(1/length(trad) + 1/length(novo))
+
+dif_medias = mean(novo)-mean(trad)
+
+t = dif_medias/(s_pooled*corretor)
+
+pvalor = pt(t,length(amostra)-2) 
+round(t,4)
+round(pvalor,4)
+# o p-valor é de 0.3306
+
+
+```
+
+Como o p-valor é maior que o nível de significância, cujo valor é de 0.05, então, não há evidências suficientes para rejeitar Ho, ou seja, a diferença das médias é igual a zero.
+
+b)
+
+```{r, echo=TRUE}
+#1)
+
+d = mean(novo) - mean(trad)
+print(d)
+
+#2)
+
+reamostra = sample(amostra,7,TRUE) # amostra com reposição da amostra original
+novo_2 = reamostra[1:4] # os 4 primeiros vão pro grupo N
+trad_2 = reamostra[5:7] # os 3 últimos vão pro grupo T
+
+#3)
+
+d2 = mean(novo_2) - mean(trad_2) # média da amostra obtida
+print(d2>d)
+
+#4)
+
+set.seed(10)
+
+n = 1000
+
+reamostras = replicate(n,sample(amostra,7,TRUE)) # gera as 1000 reamostras com reposição
+
+# importante ficar claro que cada coluna é uma reamostra
+
+reamostras_novas = as.data.frame(reamostras[1:4,]) # 4 primeiras observações vão pra "novo", em dataframe pra usar lapply
+
+reamostras_trad = as.data.frame(reamostras[5:7,]) # 3 últimos observações vão pra "trad", em dataframe pra usar lapply
+
+medias_nova = lapply(reamostras_novas, mean) # obtém as médias das novas
+medias_trad = lapply(reamostras_trad, mean) # obtém as médias das trad
+
+medias_nova = unlist(medias_nova) # unlist pra poder fazer a diferença depois
+medias_trad = unlist(medias_trad)
+
+d2 = medias_nova - medias_trad
+print(sum(d2>d))
+
+#5)
+
+sum(d2<d)/n
+
+#6)
+
+O resultado obtido é parecido com o p-valor do item a).
+
+```
+
+##3
+
+```{r, echo=TRUE}
+df <- data.frame(livro=c('N','T','T','N','N','T','N'),
+                 prop_satisfeitos=c(46,37,47,45,32,62,56))
+
+n=df$prop_satisfeitos[df$livro=='N']
+t=df$prop_satisfeitos[df$livro=='T']
+
+#H_0:mean_n=mean_t, i.e mean_n-
+
+t.test(x=t,y=n,alternative = 'greater')
+
+d=mean(t)-mean(n)
+
+vetor <- c()
+for (i in 1:10000){
+  
+  df_nova <- df[sample(1:7,7,replace = T),]
+  df_nova$grupo_novo <- c('N','N','N','N','T','T','T')
+  valor <- d<(mean(df_nova$prop_satisfeitos[df_nova$grupo_novo=='T'])-mean(df_nova$prop_satisfeitos[df_nova$grupo_novo=='N']))
+  vetor <- c(vetor,valor)
+}
+
+mean(vetor)
+```
+
+## Questão 4
+
+a) Agruparia por sexo e idade. No sexo, a gente ia separar entre homens e mulheres, e na idade iriamos dividir entre novos e velhos. No final, teriamos 4 blocos, sorteariamos 4 observações de cada bloco, e dessas 4 observações iriam 2 pra cada metodo, os dois primeiros pro A, e os dois últimos pro B.
+
+b) Com o objetivo de se obter uma maior homogeneidade, evitando que as diferenças caracteristicas da amostra provoquem um viés muito grande nos resultados.
+
+c)
+
+```{r, echo=TRUE}
+1 bloco: homens novos (2,10,11,17,18) 
+2 bloco: mulheres novas (4,5,12,16)
+3 bloco: homens velhos (1,7,8,13,14)
+4 bloco: mulheres velhas (3,6,8,15,19)
+   
+Vamos sortear 4 de cada bloco, os dois primeiros vao pro metodo A e os dois ultimos vao pro metodo B.
+   
+hn <- c(2,10,11,17,18) # 18,11,10,17
+mn <- c(4,5,12,16) # 5,16,12,4
+hv <- c(1,7,8,13,14) #7,8,1,13
+mv <- c(3,6,8,15,19) # 8,3,15,6
+
+hn=sample(hn,4)
+mn=sample(mn,4)
+hv=sample(hv,4)
+mv=sample(mv,4)
+
+```
+
+## Questão 5
+
+a) O método 2.
+
+b) Pois ele garante uma maior independência, já que terá uma peça de cada tratamento em cada simulação/corrida, assim, nessa corrida, eles (os tratamentos) vao ser afetados igualmente.
+
+c) Pois, nos outros métodos, em cada lavagem tera um tratamento, e pode acontecer da maquina girar mais ou menos em uma lavagem, assim, um tratamento seria mais ou menos afetado pela maquina.
+
+##Questão 5
+
+a) O método 1.
+
+b) Porque o método 1 garante homogeneidade quando da aplicação do tratamento. Isso é importante porque, como o enunciado diz, a comparação de tratamentos pode ser afetada por variação na aplicação do tratamento de planchado permanente:
+
+La comparación entre los tratamientos puede verse afectada 1 por: a) la variación natural de una camisa a otra, b) errores de medición, c) variación en la aplicación del tratamiento de planchado permanente, y d) variación en la corrida de simulación en la máquina de uso y lavado.
+
+Além disso, o método 1 garante homogeneidade na simulação, pois em cada simulação há somente camisas que receberam o mesmo tratamento.
+
+c) Os método 2 e 3, ao aplicarem o tratamento em cada camisa de forma independente, arriscam gerar o problema (c), "variación en la aplicación del tratamiento de planchado permanente".
+
+Os métodos 2 e 3 realizam quatro simulações com três camisas cada, então haverá mistura de camisas com tratamentos diferentes na mesma simulação. Pode haver uma interação indesejada.
+
+## Questão 6
+
+a) Se réplica for repetição, então, nesse caso, a repetição seria aplicar o mesmo antibiótico em diferentes animais.
+   A repetição do experimento consiste em formar um outro grupo de n animais de laboratório, e aplicar os vários antibióticos nestes n animais da mesma forma que foram aplicados originalmente.
+
+b) Se réplica for repetição, então, nesse caso, a repetição seria pegar varias gramíneas e vários carvalhos.
+  A repetição consiste em analisar as diferenças nas espécies de gramíneas de n diferentes culturas de algaroba pura do sul do Arizona.
+
+## Questão 7
+
+a) A variabilidade de resultados devido à variabilidade de professor não está sendo levada em consideração. Não seria possível saber se as diferenças nos resultados são devido ao método ou ao professor. Enfim, não seria possível distinguir o efeito do professor do efeito do método.
+
+b) dividir o salão em tres turmas, e o mesmo instrutor aplicar cada tratamento nessas tres turmas.
+
+## Questão 7
+
+a) Acredito que os fatos de ser salões diferentes (um salão pode estar mais claro ou pode estar mais quente que o outro), e nao ser o mesmo instrutor para cada salao/tratamento (um instrutor pode ensinar melhor que o outro, pode ter mais didática), poderiam afetar o experimento. 
+
+b) Uma forma simples de melhorar o o experimento seria usar o mesmo professor para os três métodos de ensino diferentes. Dessa forma, existiria apenas um fator com três níveis, resultando em três tratamentos.
+
+Uma forma mais sofisticada de melhorar o experimento seria usar dois fatores, em que um fator é o professor e o outro fator é o método de ensino. Cada professor utilizaria cada método em grupos de alunos distintos. Nesse cenário, teríamos dois fatores com três níveis cada, resultando em 
+6 tratamentos.
+
+## Questão 8
+
+a) Permutação com Repetição:
+
+```{r, echo=TRUE}
+x <- factorial(16)/(factorial(8)*factorial(8)) # = 12870
+```
+
+b) Permutação com Repetição:
+
+```{r, echo=TRUE}
+x <- factorial(16)/(factorial(6)*factorial(10)) # = 8008
+```
+
+## Questão 9
+
+```{r, echo=TRUE}
+a <- c(7,5,10)
+b <- c(10,9,12)
+r <- c(7,10,9,5,10,12)
+
+media_a <- mean(a)
+media_b <- mean(b)
+
+s2p <- (sum((a-media_a)^2)+sum((b-media_b)^2))/(3+3-2)
+
+t <- (media_b-media_a)/(sqrt(s2p)*sqrt((1/3)+(1/3)))
+
+t.test(b,a,alternative = "greater",var.equal = TRUE)
+
+sim <- rep(0,1000)
+for(i in 1:1000){
+   randomi <- sample(r,6)
+   sim[i] <- mean(randomi[1:3]) - mean(randomi[4:6])
+}
+
+d <- media_b - media_a
+sum(sim < d)/1000 # = 0.867
+
+ou
+
+#Note que o teste de aleatorização solicitado neste exercício é um pouco diferente do item (a) da questão 3. Você pode aplicar este teste também na Questão 3.
+
+#Solução. O teste é o teste t,assim como no item a da questão 3. Vamos realizar o teste "na mão" e via função implementada t.test. Repare que o enunciado diz para utilizarmos (media de b - media de a)
+
+a=c(7,5,10)
+b=c(10,9,12)
+s_pooled = sqrt((sum((b - mean(b))^2) + sum((a - mean(a))^2))/(length(a)+length(b)-2))
+corretor = sqrt(1/length(b) + 1/length(a))
+diff_medias = mean(b)-mean(a)
+t = diff_medias/(s_pooled*corretor)
+round(t,4)
+pvalor = 1-pt(t,n-2)
+round(pvalor,4)
+
+t.test(b,a,alternative='greater',var.equal=TRUE)
+
+```
+
+## Questão 10
+
+Temos alguns fatores a serem controlados. Devemos levar em consideração a marca da pipoca, já que pipocas de marcas diferentes possuem qualidade diferente. Também devemos levar em conta a temperatura utilizada e a quantidade de tempo que vamos usar. Então temos três fatores, a saber, a marca da pipoca, a temperatura, e o tempo. 
+
+Sobre a variável tempo, uma opção é usar o tempo recomendado, mas é possível que cada marca tenha um tempo recomendado diferente, então deve-se uniformizar o tempo, idealmente.
+
+Também estamos supondo que os sacos de pipoca possuem o mesmo peso em gramas, mas para ser rigoroso, teríamos que verificar se a quantidade de milhos é igual para as diferentes marcas. Podemos ter embalagens de 100g, mas uma marca tem 200 milhos, e outra tem 215, então isso é um fator a ser uniformizado. Supondo estes três fatores, teremos m(marca)xt(temperatura)xh(tempo) tratamentos.
+
+Os blocos seriam, naturalmente, as diferentes marcas de milho. As unidades experimentais e observacionais coincidem, sendo os milhos de pipoca.
+
+Parece que haveria interação entre temperatura e tempo, quer dizer, o tratamento com mais tempo e maior temperatura pode ultrapassar a temperatura máxima desejável, e o tratamento com menos tempo e menor temperatura pode não atingir uma temperatura mínima de interesse.
